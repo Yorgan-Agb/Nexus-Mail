@@ -8,7 +8,7 @@ import type { Server } from "node:http";
 let server: Server;
 
 const config = {
-  port: process.env.PORT,
+  db_port: process.env.PORT_DB,
   user: process.env.DATABASE_USER,
   password: process.env.DATABASE_PASSWORD,
   database: process.env.DATABASE_NAME,
@@ -21,7 +21,7 @@ before(() => {
     docker run                            \
       -d                                  \
       --name nexus-test                    \
-      -p ${config.port}:5432                        \
+      -p ${config.db_port}:5432                        \
       -e POSTGRES_USER=${config.user}          \
       -e POSTGRES_PASSWORD=${config.password}      \
       -e POSTGRES_DB=${config.database}            \
