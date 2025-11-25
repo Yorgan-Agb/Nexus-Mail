@@ -7,3 +7,4 @@ prisma/generated/
 uploads/
 *.log
 .DS_Store
+request.http
