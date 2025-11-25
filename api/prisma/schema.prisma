@@ -1,0 +1,150 @@
+generator client {
+  provider = "prisma-client"
+  output   = "./generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int     @id @default(autoincrement())
+  email     String  @unique
+  firstname String
+  lastname  String
+  password  String
+  birthdate DateTime
+  credit_ai Int     @default(0)
+  role      String  @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  folders      Folder[]
+  mails        Mail[]
+  tags         Tag[]
+  ai_usages    AiUsage[]
+
+  @@map("users")
+}
+
+model Folder {
+  id   Int    @id @default(autoincrement())
+  name String
+  type String
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+
+  mails Mail[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+
+  @@map("folders")
+}
+
+model Mail {
+  id            Int      @id @default(autoincrement())
+  subject       String
+  body          String
+  readAt        DateTime?
+  sendedAt      DateTime @default(now())
+  receivedAt    DateTime @default(now())
+  senderEmail   String
+  senderName    String?
+  
+  folder        Folder   @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  folderId      Int
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int
+  
+  attachments   Attachment[]
+  recipients    MailRecipient[]
+  tags          MailsHasTags[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([folderId])
+  @@index([userId])
+
+  @@map("mails")
+}
+
+model Attachment {
+  id        Int    @id @default(autoincrement())
+  filename  String
+  filesize  Int
+  filepath  String @unique
+  
+  mail      Mail   @relation(fields: [mailId], references: [id], onDelete: Cascade)
+  mailId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([mailId])
+
+  @@map("attachments")
+}
+
+model MailRecipient {
+  id              Int    @id @default(autoincrement())
+  recipientEmail  String
+  recipientType   String
+  
+  mail            Mail   @relation(fields: [mailId], references: [id], onDelete: Cascade)
+  mailId          Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([mailId])
+
+  @@map("mail_recipients")
+}
+
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String
+  color String
+  
+  user User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  
+  mails MailsHasTags[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+
+  @@map("tags")
+}
+
+model MailsHasTags {
+  mailId Int
+  tagId  Int
+  
+  mail   Mail @relation(fields: [mailId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([mailId, tagId])
+  @@index([tagId])
+
+  @@map("mails_has_tags")
+}
+
+model AiUsage {
+  id         Int    @id @default(autoincrement())
+  feature    String
+  cost       Int
+  tokenUsed  Int
+  
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+
+  @@map("ai_usages")
+}
