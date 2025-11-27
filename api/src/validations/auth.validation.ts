@@ -9,7 +9,7 @@ export const registerSchema = zod.object({
     .string()
     .min(3, "Le prénom est requis")
     .regex(/^[A-Za-zÀ-ÿ\s\-']+$/, "Caractères invalides dans le prénom"),
-  email: zod.string().email("Adresse e-mail invalide"),
+  email: zod.email("Adresse e-mail invalide"),
   password: zod
     .string()
     .min(6, "Le mot de passe doit contenir au moins 6 caractères")
@@ -28,3 +28,10 @@ export const registerSchema = zod.object({
 });
 
 export type RegisterInput = zod.infer<typeof registerSchema>;
+
+export const loginSchema = zod.object({
+  email: zod.email("Adresse e-mail invalide"),
+  password: zod.string().min(1, "Le mot de passe est requis"),
+});
+
+export type LoginInput = zod.infer<typeof loginSchema>;

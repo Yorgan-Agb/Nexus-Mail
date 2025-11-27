@@ -31,4 +31,20 @@ describe("[POST] /auth/register", () => {
       new Date(body.birthdate).toISOString()
     );
   });
+  it("should return a 409 status when trying to register an existing user", async () => {
+    // ARRANGE
+    const body = {
+      firstname: "John",
+      lastname: "Smith",
+      email: "john.smith@example.com",
+      password: "anotherSecurePassword456!",
+      birthdate: "1985-05-15",
+    };
+    await httpRequest.post("/auth/register", body);
+    // ACT
+    const response = await httpRequest.post("/auth/register", body);
+
+    // ASSERT
+    assert.strictEqual(response.status, 409);
+  });
 });
