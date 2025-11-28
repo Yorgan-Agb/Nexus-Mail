@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
-import { registerSchema } from "../validations/auth.validation.ts";
-import { register } from "../services/auth.service.ts";
+import { registerSchema, loginSchema } from "../validations/auth.validation.ts";
+import { login, register } from "../services/auth.service.ts";
+import { setRefreshTokenCookie } from "../lib/cookie.ts";
+import { prisma } from "../models/index.ts";
+import { generateAccessToken, generateRefreshToken } from "../lib/auth.ts";
+import { NotFoundError } from "../lib/error.ts";
 
 export const registerUser = async (req: Request, res: Response) => {
   const userData = registerSchema.parse(req.body);
@@ -8,6 +12,10 @@ export const registerUser = async (req: Request, res: Response) => {
   res.status(201).json({ message: "User registered successfully" });
 };
 
-export const login = async (req: Request, res: Response) => {
-  res.status(200).json({ message: "Login endpoint" });
+export const loginUser = async (req: Request, res: Response) => {
+  const { email, password } = loginSchema.parse(req.body);
+  const userAgent = req.headers["user-agent"] || "";
+  const { accessToken, refreshToken } = await login(email, password, userAgent);
+  setRefreshTokenCookie(res, refreshToken);
+  res.status(200).json({ accessToken, refreshToken });
 };

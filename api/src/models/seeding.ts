@@ -1,5 +1,8 @@
 import { prisma } from "./index.ts";
 import argon2 from "argon2";
+import jwt from "jsonwebtoken";
+import "dotenv/config";
+import { config } from "../../config.ts";
 
 async function main() {
   console.log("🌱 Seeding database...");
@@ -12,6 +15,7 @@ async function main() {
   await prisma.folder.deleteMany();
   await prisma.aiUsage.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.refreshToken.deleteMany();
 
   console.log("🗑️  Database cleaned");
 
@@ -173,6 +177,46 @@ async function main() {
       cost: 3,
       tokenUsed: 80,
       userId: user1.id,
+    },
+  });
+
+  const jwtSecret = process.env.JWT_SECRET;
+
+  if (!jwtSecret) {
+    console.log("JWT_SECRET is not defined in environment variables");
+  }
+
+  const refreshToken1 = jwt.sign(
+    { userId: user1.id, userRole: user1.role },
+    config.jwtSecret,
+    { expiresIn: "24h" }
+  );
+
+  const refreshToken2 = jwt.sign(
+    { userId: user2.id, userRole: user2.role },
+    config.jwtSecret,
+    { expiresIn: "24h" }
+  );
+
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken1,
+      userId: user1.id,
+      expire_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      user_agent:
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      last_used_at: new Date(),
+    },
+  });
+
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken2,
+      userId: user1.id,
+      expire_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      user_agent:
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      last_used_at: new Date(),
     },
   });
 

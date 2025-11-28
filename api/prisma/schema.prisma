@@ -23,6 +23,7 @@ model User {
   mails        Mail[]
   tags         Tag[]
   ai_usages    AiUsage[]
+  refreshTokens RefreshToken[]
 
   @@map("users")
 }
@@ -147,4 +148,20 @@ model AiUsage {
   @@index([userId])
 
   @@map("ai_usages")
+}
+
+model RefreshToken {
+  id Int @id @default(autoincrement())
+  token String @unique
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId Int
+  expire_at DateTime
+  user_agent String 
+  last_used_at DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+
+  @@map("refresh_tokens")
 }
