@@ -1,12 +1,17 @@
 import type { RegisterInput } from "../validations/auth.validation.ts";
 import { prisma } from "../models/index.ts";
 import argon2 from "argon2";
-import { ConflictError, NotFoundError } from "../lib/error.ts";
+import {
+  ConflictError,
+  NotFoundError,
+  UnauthorizedError,
+} from "../lib/error.ts";
 import {
   generateAccessToken,
   extractRefreshTokenFromReq,
   generateRefreshToken,
 } from "../lib/auth.ts";
+import crypto from "node:crypto";
 
 export interface AuthTokens {
   accessToken: string;
@@ -44,7 +49,7 @@ export const login = async (
   }
   const isPasswordValid = await argon2.verify(user.password, password);
   if (!isPasswordValid) {
-    throw new ConflictError("Invalid mail or password");
+    throw new UnauthorizedError("Invalid mail or password");
   }
   const token = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
@@ -56,5 +61,5 @@ export const login = async (
       expire_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
     },
   });
-  return { accessToken: token, refreshToken };
+  return { accessToken: token, refreshToken: refreshToken };
 };

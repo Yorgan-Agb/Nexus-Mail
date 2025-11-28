@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert";
 import { httpRequest } from "../../test/index.ts";
 import { prisma } from "../models/index.ts";
+import argon2 from "argon2";
 
 describe("[POST] /auth/register", () => {
   it("should return a 201 status when user is registered successfully", async () => {
@@ -46,5 +47,91 @@ describe("[POST] /auth/register", () => {
 
     // ASSERT
     assert.strictEqual(response.status, 409);
+  });
+});
+
+describe("[POST] /auth/login", () => {
+  it("should return a 200 status and token when login is succcessful", async () => {
+    // ARRANGE
+
+    const user = await prisma.user.create({
+      data: {
+        firstname: "Alice",
+        lastname: "Johnson",
+        email: "alice.johnson@example.com",
+        password: await argon2.hash("password123"),
+        birthdate: new Date("1992-07-20"),
+      },
+    });
+    const body = {
+      email: "alice.johnson@example.com",
+      password: "password123",
+    };
+
+    // ACT
+    const data = await httpRequest.post("/auth/login", body);
+
+    // ASSERT
+    assert.strictEqual(data.status, 200);
+  });
+  it("should return two tokens on successful login", async () => {
+    // ARRANGE
+
+    const user = await prisma.user.create({
+      data: {
+        firstname: "Bob",
+        lastname: "Williams",
+        email: "bob.williams@example.com",
+        password: await argon2.hash("mySecretPwd!"),
+        birthdate: new Date("1988-11-30"),
+      },
+    });
+    const body = {
+      email: "bob.williams@example.com",
+      password: "mySecretPwd!",
+    };
+
+    // ACT
+    const data = await httpRequest.post("/auth/login", body);
+
+    // ASSERT
+    assert.strictEqual(data.status, 200);
+    assert.ok(data.data.accessToken);
+    assert.ok(data.data.refreshToken);
+  });
+  it("sould return a 401 status when login fails due to incorrect mail or password", async () => {
+    // ARRANGE
+    const user = await prisma.user.create({
+      data: {
+        firstname: "Bob",
+        lastname: "Williams",
+        email: "bob.williams@example.com",
+        password: await argon2.hash("mySecretPwd!"),
+        birthdate: new Date("1988-11-30"),
+      },
+    });
+    const body = {
+      email: "bob.williams@example.com",
+      password: "incorrectPassword",
+    };
+
+    // ACT
+    const data = await httpRequest.post("/auth/login", body);
+
+    // ASSERT
+    assert.strictEqual(data.status, 401);
+  });
+  it("should return a 404 status when login fails due to non-existing user", async () => {
+    // ARRANGE
+    const body = {
+      email: "non.existing.user@example.com",
+      password: "somePassword",
+    };
+
+    // ACT
+    const data = await httpRequest.post("/auth/login", body);
+
+    // ASSERT
+    assert.strictEqual(data.status, 404);
   });
 });
