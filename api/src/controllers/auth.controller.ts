@@ -8,7 +8,7 @@ import {
   generateRefreshToken,
   extractRefreshTokenFromReq,
 } from "../lib/auth.ts";
-import { NotFoundError } from "../lib/error.ts";
+import { NotFoundError, UnauthorizedError } from "../lib/error.ts";
 import e from "express";
 
 export const registerUser = async (req: Request, res: Response) => {
@@ -31,10 +31,10 @@ export const tokenRefresh = async (req: Request, res: Response) => {
     where: { token: extractToken },
   });
   if (!storedToken) {
-    throw new NotFoundError("Refresh token not found");
+    throw new UnauthorizedError("Refresh token not found");
   }
   if (storedToken.expire_at < new Date()) {
-    throw new NotFoundError("Refresh token expired");
+    throw new UnauthorizedError("Refresh token expired");
   }
   const user = await prisma.user.findUnique({
     where: { id: storedToken.userId },
@@ -54,13 +54,8 @@ export const tokenRefresh = async (req: Request, res: Response) => {
 };
 
 export const logoutUser = async (req: Request, res: Response) => {
-  console.log("req.cookies:", req.cookies);
-  console.log("req.body:", req.body);
   const refreshToken = extractRefreshTokenFromReq(req);
-  console.log("Extracted refreshToken:", refreshToken);
-  if (!refreshToken) {
-    return res.status(400).json({ message: "Invalid refresh token" });
-  }
+
   await logout(refreshToken);
   res.clearCookie("refreshToken");
   res.status(200).json({ message: "Logged out successfully" });
