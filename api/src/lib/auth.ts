@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import type { JwtPayload } from "jsonwebtoken";
 import { config } from "../../config.ts";
 import type { User } from "../models/index.ts";
+import type { Request } from "express";
 
 export const generateAccessToken = (user: User) => {
   const payload = {
@@ -41,10 +42,13 @@ export const decodeRefreshToken = (token: string) => {
 };
 
 export const extractRefreshTokenFromReq = (req: Request) => {
-  const authHeader = req.headers.get("Authorization");
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    throw new UnauthorizedError("Authorization header missing or malformed");
+  const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+  // if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  //   throw new UnauthorizedError("Authorization header missing or malformed");
+  // }
+  if (!refreshToken) {
+    throw new UnauthorizedError("Refresh token missing");
   }
-  const refreshToken = authHeader.split(" ")[1];
+  // const refreshToken = authHeader.split(" ")[1];
   return refreshToken;
 };

@@ -11,7 +11,6 @@ import {
   extractRefreshTokenFromReq,
   generateRefreshToken,
 } from "../lib/auth.ts";
-import crypto from "node:crypto";
 
 export interface AuthTokens {
   accessToken: string;
@@ -59,7 +58,14 @@ export const login = async (
       userId: user.id,
       user_agent: userAgent,
       expire_at: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      last_used_at: new Date(Date.now()),
     },
   });
   return { accessToken: token, refreshToken: refreshToken };
+};
+
+export const logout = async (refreshToken: string) => {
+  await prisma.refreshToken.deleteMany({
+    where: { token: refreshToken },
+  });
 };
