@@ -1,15 +1,15 @@
 import type { Request, Response } from "express";
 import { registerSchema, loginSchema } from "../validations/auth.validation.ts";
-import { login, register, logout } from "../services/auth.service.ts";
+import {
+  login,
+  register,
+  logout,
+  refreshAccessToken,
+} from "../services/auth.service.ts";
 import { setRefreshTokenCookie } from "../lib/cookie.ts";
 import { prisma } from "../models/index.ts";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  extractRefreshTokenFromReq,
-} from "../lib/auth.ts";
+import { extractRefreshTokenFromReq } from "../lib/auth.ts";
 import { NotFoundError, UnauthorizedError } from "../lib/error.ts";
-import e from "express";
 
 export const registerUser = async (req: Request, res: Response) => {
   const userData = registerSchema.parse(req.body);
@@ -26,30 +26,7 @@ export const loginUser = async (req: Request, res: Response) => {
 };
 
 export const tokenRefresh = async (req: Request, res: Response) => {
-  const extractToken = extractRefreshTokenFromReq(req);
-  const storedToken = await prisma.refreshToken.findUnique({
-    where: { token: extractToken },
-  });
-  if (!storedToken) {
-    throw new UnauthorizedError("Refresh token not found");
-  }
-  if (storedToken.expire_at < new Date()) {
-    throw new UnauthorizedError("Refresh token expired");
-  }
-  const user = await prisma.user.findUnique({
-    where: { id: storedToken.userId },
-  });
-  if (!user) {
-    throw new NotFoundError("User not found");
-  }
-  const newAccessToken = generateAccessToken(user);
-
-  await prisma.refreshToken.update({
-    where: { token: extractToken },
-    data: {
-      last_used_at: new Date(Date.now()),
-    },
-  });
+  const newAccessToken = await refreshAccessToken(req);
   res.status(200).json({ accessToken: newAccessToken });
 };
 

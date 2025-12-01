@@ -52,3 +52,21 @@ export const extractRefreshTokenFromReq = (req: Request) => {
   // const refreshToken = authHeader.split(" ")[1];
   return refreshToken;
 };
+
+export const extractAccessTokenFromReq = (req: Request) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new UnauthorizedError("Authorization header missing or malformed");
+  }
+  const accessToken = authHeader.split(" ")[1];
+  return accessToken;
+};
+
+export const decodeAccessToken = (token: string) => {
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret) as UserPayload;
+    return decoded;
+  } catch (error) {
+    throw new UnauthorizedError("Invalid token");
+  }
+};

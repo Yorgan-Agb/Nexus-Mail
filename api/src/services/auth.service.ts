@@ -11,6 +11,7 @@ import {
   extractRefreshTokenFromReq,
   generateRefreshToken,
 } from "../lib/auth.ts";
+import type { Request } from "express";
 
 export interface AuthTokens {
   accessToken: string;
@@ -37,6 +38,34 @@ export const register = async (data: RegisterInput) => {
   });
 };
 
+export const refreshAccessToken = async (req: Request) => {
+  const extractToken = extractRefreshTokenFromReq(req);
+  const storedToken = await prisma.refreshToken.findUnique({
+    where: { token: extractToken },
+  });
+  if (!storedToken) {
+    throw new UnauthorizedError("Refresh token not found");
+  }
+  if (storedToken.expire_at < new Date()) {
+    throw new UnauthorizedError("Refresh token expired");
+  }
+  const user = await prisma.user.findUnique({
+    where: { id: storedToken.userId },
+  });
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
+  const newAccessToken = generateAccessToken(user);
+
+  await prisma.refreshToken.update({
+    where: { token: extractToken },
+    data: {
+      last_used_at: new Date(Date.now()),
+    },
+  });
+  return newAccessToken;
+};
+
 export const login = async (
   email: string,
   password: string,
@@ -61,7 +90,7 @@ export const login = async (
       last_used_at: new Date(Date.now()),
     },
   });
-  return { accessToken: token, refreshToken: refreshToken };
+  return { accessToken: token, refreshToken };
 };
 
 export const logout = async (refreshToken: string) => {
