@@ -4,6 +4,7 @@ import {
   profile,
   changeProfile,
   changePassword,
+  deleteAccount,
 } from "../services/user.service.ts";
 import { UnauthorizedError, ForbiddenError } from "../lib/error.ts";
 import {
@@ -50,4 +51,10 @@ export const changePasswordUser = async (req: Request, res: Response) => {
   const userData = changePasswordSchema.parse(req.body);
   const updatedUser = await changePassword(userId, userData);
   res.status(200).json({ user: updatedUser });
+};
+
+export const deleteUser = async (req: Request, res: Response) => {
+  const userId = req.userId;
+  await deleteAccount(userId);
+  res.status(200).json({ message: "User account deleted successfully" });
 };

@@ -118,3 +118,76 @@ describe("[PUT] /users/me", () => {
     assert.strictEqual(data.user.lastname, updateData.lastname);
   });
 });
+// A implémenter demain test pour le changement de mot de passe
+describe("[PUT] /users/me/password", () => {
+  it("should return a 200 status when password is successfully changed", async () => {
+    // ARRANGE
+    const password = "mySecretPwd!";
+    const user = await prisma.user.create({
+      data: { ...fakeUser, password: await argon2.hash(password) },
+    });
+
+    const accessToken = generateAccessToken(user);
+    const passwordData = {
+      currentPassword: password,
+      newPassword: "newSecurePassword123!",
+    };
+
+    // ACT
+    const { status } = await httpRequest.put(
+      "/users/me/password",
+      passwordData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    // ASSERT
+    assert.strictEqual(status, 200);
+  });
+  it("should return a 401 status when current password is incorrect", async () => {
+    // ARRANGE
+    const password = "mySecretPwd!";
+    const user = await prisma.user.create({
+      data: { ...fakeUser, password: await argon2.hash(password) },
+    });
+
+    const accessToken = generateAccessToken(user);
+    const passwordData = {
+      currentPassword: "mySecretPwd!!",
+      newPassword: "newSecurePassword123!",
+    };
+
+    // ACT
+    const { status } = await httpRequest.put(
+      "/users/me/password",
+      passwordData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    // ASSERT
+    assert.strictEqual(status, 401);
+  });
+  it("should return a 401 status when access token is missing", async () => {
+    // ARRANGE
+    const passwordData = {
+      currentPassword: "mySecretPwd!",
+      newPassword: "newSecurePassword123!",
+    };
+
+    // ACT
+    const { status } = await httpRequest.put(
+      "/users/me/password",
+      passwordData
+    );
+
+    // ASSERT
+    assert.strictEqual(status, 401);
+  });
+});

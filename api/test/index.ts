@@ -11,7 +11,7 @@ export const fakeUser: User = {
   firstname: "Bob",
   lastname: "Williams",
   email: "bob.williams@example.com",
-  password: await argon2.hash("mySecretPwd!"),
+  password: "mySecretPwd!",
   birthdate: new Date("1988-11-30"),
   credit_ai: 100,
   role: "user",

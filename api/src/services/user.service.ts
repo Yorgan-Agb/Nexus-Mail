@@ -93,3 +93,17 @@ export const changePassword = async (
 
   return updatedUser;
 };
+
+export const deleteAccount = async (userId: string) => {
+  const parseId = Number(userId);
+  const user = await prisma.user.findUnique({
+    where: { id: parseId },
+  });
+  if (!user) {
+    throw new NotFoundError("User not found");
+  }
+
+  await prisma.user.delete({
+    where: { id: parseId },
+  });
+};
