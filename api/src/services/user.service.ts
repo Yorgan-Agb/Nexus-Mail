@@ -103,6 +103,10 @@ export const deleteAccount = async (userId: string) => {
     throw new NotFoundError("User not found");
   }
 
+  await prisma.refreshToken.deleteMany({
+    where: { userId: parseId },
+  });
+
   await prisma.user.delete({
     where: { id: parseId },
   });

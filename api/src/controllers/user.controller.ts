@@ -13,6 +13,10 @@ import {
 } from "../validations/user.validation.ts";
 
 export const getAllUsers = async (req: Request, res: Response) => {
+  const role = req.userRole;
+  if (role !== "admin") {
+    throw new ForbiddenError("Access denied");
+  }
   const users = await prisma.user.findMany({
     select: {
       id: true,
@@ -26,10 +30,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
       updatedAt: true,
     },
   });
-  const role = req.userRole;
-  if (role !== "admin") {
-    throw new ForbiddenError("Access denied");
-  }
+
   res.status(200).json({ users });
 };
 

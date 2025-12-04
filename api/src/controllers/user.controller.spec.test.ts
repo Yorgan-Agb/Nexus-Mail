@@ -191,3 +191,38 @@ describe("[PUT] /users/me/password", () => {
     assert.strictEqual(status, 401);
   });
 });
+describe("[DELETE] /users/me", () => {
+  it("should return a 200 status when user account is successfully deleted", async () => {
+    // ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+
+    const accessToken = generateAccessToken(user);
+    // ACT
+    const { status } = await httpRequest.delete("/users/me", {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    // ASSERT
+    assert.strictEqual(status, 200);
+    const deletedUser = await prisma.user.findUnique({
+      where: { id: user.id },
+    });
+    assert.strictEqual(deletedUser, null);
+  });
+  it("should return a 401 status when access token is missing", async () => {
+    // ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+
+    // ACT
+    const { status } = await httpRequest.delete("/users/me");
+
+    // ASSERT
+    assert.strictEqual(status, 401);
+  });
+});
