@@ -5,7 +5,6 @@ import {
   register,
   logout,
   refreshAccessToken,
-  profile,
 } from "../services/auth.service.ts";
 import { setRefreshTokenCookie } from "../lib/cookie.ts";
 import { extractRefreshTokenFromReq } from "../lib/auth.ts";
@@ -35,10 +34,4 @@ export const logoutUser = async (req: Request, res: Response) => {
   await logout(refreshToken);
   res.clearCookie("refreshToken");
   res.status(200).json({ message: "Logged out successfully" });
-};
-
-export const profileUser = async (req: Request, res: Response) => {
-  const userId = req.userId;
-  const user = await profile(userId);
-  res.status(200).json({ user });
 };

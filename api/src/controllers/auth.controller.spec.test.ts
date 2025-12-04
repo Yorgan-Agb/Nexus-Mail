@@ -3,7 +3,8 @@ import assert from "node:assert";
 import { httpRequest } from "../../test/index.ts";
 import { prisma } from "../models/index.ts";
 import argon2 from "argon2";
-import { fakeUser } from "../../test/index.ts";
+import { fakeUser, authedRequester } from "../../test/index.ts";
+import { generateAccessToken } from "../lib/auth.ts";
 
 describe("[POST] /auth/register", () => {
   it("should return a 201 status when user is registered successfully", async () => {
@@ -258,54 +259,5 @@ describe("[POST] /auth/logout", () => {
 
     // ASSERT
     assert.strictEqual(logoutResponse.status, 200);
-  });
-});
-
-describe("[GET] /auth/me", () => {
-  it("should return a 200 status with user profile ", async () => {
-    // ARRANGE
-    const user = await prisma.user.create({
-      data: {
-        firstname: fakeUser.firstname,
-        lastname: fakeUser.lastname,
-        email: fakeUser.email,
-        password: fakeUser.password,
-        birthdate: fakeUser.birthdate,
-      },
-    });
-    const login = {
-      email: fakeUser.email,
-      password: "mySecretPwd!",
-    };
-    const loginResponse = await httpRequest.post("/auth/login", login);
-    const accessToken = loginResponse.data.accessToken;
-
-    const headers = {
-      Authorization: `Bearer ${accessToken}`,
-    };
-
-    // ACT
-    const profileResponse = await httpRequest.get("/auth/me", { headers });
-
-    // ASSERT
-    assert.strictEqual(profileResponse.status, 200);
-    assert.strictEqual(profileResponse.data.user.firstname, "Bob");
-    assert.strictEqual(profileResponse.data.user.lastname, "Williams");
-    assert.strictEqual(
-      profileResponse.data.user.email,
-      "bob.williams@example.com"
-    );
-  });
-  it("should return a 401 status when access token is missing", async () => {
-    // ARRANGE
-    const headers = {
-      Authorization: `Bearer `,
-    };
-
-    // ACT
-    const profileResponse = await httpRequest.get("/auth/me", { headers });
-
-    // ASSERT
-    assert.strictEqual(profileResponse.status, 401);
   });
 });
