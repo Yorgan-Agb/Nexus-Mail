@@ -28,7 +28,7 @@ export const generateRefreshToken = (user: User) => {
 };
 
 export interface UserPayload extends JwtPayload {
-  userId: string;
+  userId: number;
   userRole: string;
 }
 

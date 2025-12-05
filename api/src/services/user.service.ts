@@ -6,10 +6,9 @@ import type {
 } from "../validations/user.validation.ts";
 import argon2 from "argon2";
 
-export const profile = async (userId: string) => {
-  const parseId = Number(userId);
+export const profile = async (userId: number) => {
   const user = await prisma.user.findUnique({
-    where: { id: parseId },
+    where: { id: userId },
     select: {
       firstname: true,
       lastname: true,
@@ -25,19 +24,18 @@ export const profile = async (userId: string) => {
 };
 
 export const changeProfile = async (
-  userId: string,
+  userId: number,
   data: ChangeProfileInput
 ) => {
-  const parseId = Number(userId);
   const user = await prisma.user.findUnique({
-    where: { id: parseId },
+    where: { id: userId },
   });
   if (!user) {
     throw new NotFoundError("User not found");
   }
 
   const updatedUser = await prisma.user.update({
-    where: { id: parseId },
+    where: { id: userId },
     data: {
       firstname: data.firstname,
       lastname: data.lastname,
@@ -57,12 +55,11 @@ export const changeProfile = async (
 };
 
 export const changePassword = async (
-  userId: string,
+  userId: number,
   data: ChangePasswordInput
 ) => {
-  const parseId = Number(userId);
   const user = await prisma.user.findUnique({
-    where: { id: parseId },
+    where: { id: userId },
   });
   if (!user) {
     throw new NotFoundError("User not found");
@@ -78,7 +75,7 @@ export const changePassword = async (
   const hashedNewPassword = await argon2.hash(data.newPassword);
 
   const updatedUser = await prisma.user.update({
-    where: { id: parseId },
+    where: { id: userId },
     data: {
       password: hashedNewPassword,
     },
@@ -94,20 +91,19 @@ export const changePassword = async (
   return updatedUser;
 };
 
-export const deleteAccount = async (userId: string) => {
-  const parseId = Number(userId);
+export const deleteAccount = async (userId: number) => {
   const user = await prisma.user.findUnique({
-    where: { id: parseId },
+    where: { id: userId },
   });
   if (!user) {
     throw new NotFoundError("User not found");
   }
 
   await prisma.refreshToken.deleteMany({
-    where: { userId: parseId },
+    where: { userId: userId },
   });
 
   await prisma.user.delete({
-    where: { id: parseId },
+    where: { id: userId },
   });
 };
