@@ -10,10 +10,13 @@ export const createTagSchema = z.object({
     .string()
     .regex(/^#[0-9A-Fa-f]{6}$/, "Color must be in hex format (#RRGGBB)"),
 });
-export const createTagsSchema = z.union([
-  createTagSchema,
-  z.array(createTagSchema).min(1, "At least one tag is required"),
-]);
+
+export const createTagsSchema = z.object({
+  tags: z.union([
+    createTagSchema,
+    z.array(createTagSchema).min(1, "At least one tag is required"),
+  ]),
+});
 
 export type CreateTagInput = z.infer<typeof createTagSchema>;
-export type CreateTagsInput = z.infer<typeof createTagsSchema>;
+export type TagsData = CreateTagInput | CreateTagInput[];
