@@ -36,7 +36,7 @@ export const changeProfile = async (
     throw new NotFoundError("User not found");
   }
 
-  if (user.email !== data.email) {
+  if (data.email && data.email !== user.email) {
     const isEmailTaken = await prisma.user.findUnique({
       where: { email: data.email },
     });
@@ -44,7 +44,6 @@ export const changeProfile = async (
       throw new UnauthorizedError("Email is already taken");
     }
   }
-
   const updatedUser = await prisma.user.update({
     where: { id: userId },
     data: {
