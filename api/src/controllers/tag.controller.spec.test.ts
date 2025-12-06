@@ -61,3 +61,42 @@ describe("[GET] /tags", () => {
     assert.strictEqual(response.status, 401);
   });
 });
+
+describe("[POST] /tags", () => {
+  it("should create new tags for the authenticated user", async () => {
+    // ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+    const accessToken = generateAccessToken(user);
+    const newTags = {
+      tags: [
+        { name: "Important", color: "#FF0000" },
+        { name: "Work", color: "#0000FF" },
+      ],
+    };
+    await prisma.tag.createMany({
+      data: newTags.tags.map((tag) => ({
+        name: tag.name,
+        color: tag.color,
+        userId: user.id,
+      })),
+    });
+
+    // ACT
+    const response = await httpRequest.post("/tags", newTags, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    // ASSERT
+    assert.strictEqual(response.status, 201);
+    const createdTags = response.data.tags;
+    assert.strictEqual(createdTags.length, 2);
+    assert.deepStrictEqual(
+      createdTags.map((tag: any) => ({ name: tag.name, color: tag.color })),
+      newTags.tags
+    );
+  });
+});

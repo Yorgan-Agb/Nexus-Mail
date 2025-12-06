@@ -1,5 +1,6 @@
 import { NotFoundError, UnauthorizedError } from "../lib/error.ts";
 import { prisma } from "../models/index.ts";
+import { Prisma } from "../models/index.ts";
 import type {
   ChangeProfileInput,
   ChangePasswordInput,
@@ -30,8 +31,18 @@ export const changeProfile = async (
   const user = await prisma.user.findUnique({
     where: { id: userId },
   });
+
   if (!user) {
     throw new NotFoundError("User not found");
+  }
+
+  if (user.email !== data.email) {
+    const isEmailTaken = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+    if (isEmailTaken) {
+      throw new UnauthorizedError("Email is already taken");
+    }
   }
 
   const updatedUser = await prisma.user.update({
@@ -92,16 +103,18 @@ export const changePassword = async (
 };
 
 export const deleteAccount = async (userId: number) => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-  });
-  if (!user) {
-    throw new NotFoundError("User not found");
+  try {
+    await prisma.refreshToken.deleteMany({
+      where: { userId: userId },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        throw new NotFoundError("User not found");
+      }
+    }
+    throw error;
   }
-
-  await prisma.refreshToken.deleteMany({
-    where: { userId: userId },
-  });
 
   await prisma.user.delete({
     where: { id: userId },

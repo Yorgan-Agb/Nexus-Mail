@@ -6,7 +6,7 @@ import {
   changePassword,
   deleteAccount,
 } from "../services/user.service.ts";
-import { UnauthorizedError, ForbiddenError } from "../lib/error.ts";
+import { ForbiddenError } from "../lib/error.ts";
 import {
   changePasswordSchema,
   changeProfileSchema,

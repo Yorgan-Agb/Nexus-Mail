@@ -1,6 +1,5 @@
 import axios from "axios";
 import { config } from "../config.ts";
-import argon2 from "argon2";
 import { generateAccessToken } from "../src/lib/auth.ts";
 import type { User } from "../src/models/index.ts";
 
@@ -24,7 +23,7 @@ export const fakeAdminUser: User = {
   firstname: "Alice",
   lastname: "Johnson",
   email: "alice.johnson@example.com",
-  password: await argon2.hash("mySecretPwd!"),
+  password: "mySecretPwd!",
   birthdate: new Date("1985-05-15"),
   credit_ai: 200,
   role: "admin",
