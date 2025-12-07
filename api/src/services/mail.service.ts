@@ -8,3 +8,13 @@ export const allMails = async (userId: number) => {
 
   return mails;
 };
+
+export const getMailById = async (userId: number, mailId: number) => {
+  const mail = await prisma.mail.findFirst({
+    where: { id: mailId, userId },
+  });
+  if (!mail) {
+    throw new NotFoundError("Mail not found");
+  }
+  return mail;
+};
