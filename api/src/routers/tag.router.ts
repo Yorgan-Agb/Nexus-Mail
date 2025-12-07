@@ -4,6 +4,7 @@ import {
   getAllTags,
   addNewTags,
   modifyTag,
+  deleteTag,
 } from "../controllers/tag.controller.ts";
 
 export const tagRouter = Router();
@@ -11,3 +12,4 @@ export const tagRouter = Router();
 tagRouter.get("/", checkAuth, getAllTags);
 tagRouter.post("/new", checkAuth, addNewTags);
 tagRouter.patch("/update/:id", checkAuth, modifyTag);
+tagRouter.delete("/remove/:id", checkAuth, deleteTag);

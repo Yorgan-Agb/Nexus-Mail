@@ -2,7 +2,7 @@ import { prisma } from "../models/index.ts";
 import type { Request, Response } from "express";
 import { UnauthorizedError, ForbiddenError } from "../lib/error.ts";
 import { decodeAccessToken, extractAccessTokenFromReq } from "../lib/auth.ts";
-import { allTags, addTags, modify } from "../services/tag.service.ts";
+import { allTags, addTags, modify, remove } from "../services/tag.service.ts";
 import {
   createTagsSchema,
   updateTagSchema,
@@ -41,4 +41,13 @@ export const modifyTag = async (req: Request, res: Response) => {
   const updatedTag = await modify(userId, tagId, updateTagData);
 
   res.status(200).json({ tag: updatedTag });
+};
+
+export const deleteTag = async (req: Request, res: Response) => {
+  const userId = req.userId;
+  const tagId = Number(req.params.id);
+
+  await remove(userId, tagId);
+
+  res.status(200).json({ message: "Tag deleted successfully" });
 };

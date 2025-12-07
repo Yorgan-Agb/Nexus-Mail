@@ -89,3 +89,15 @@ export const modify = async (
   });
   return updatedTag;
 };
+
+export const remove = async (userId: number, tagId: number) => {
+  const tag = await prisma.tag.findUnique({
+    where: { id: tagId },
+  });
+  if (!tag || tag.userId !== userId) {
+    throw new NotFoundError("Tag not found");
+  }
+  await prisma.tag.delete({
+    where: { id: tagId },
+  });
+};
