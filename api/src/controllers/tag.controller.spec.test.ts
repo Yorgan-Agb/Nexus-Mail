@@ -36,7 +36,7 @@ describe("[GET] /tags", () => {
       tagData.map(({ name, color }) => ({ name, color }))
     );
   });
-  it("should return a 404 status when no tags are found for the user", async () => {
+  it("should return a 200 status with an empty array when no tags are found for the user", async () => {
     // ARRANGE
     const user = await prisma.user.create({
       data: fakeUser,
@@ -51,7 +51,7 @@ describe("[GET] /tags", () => {
     });
 
     // ASSERT
-    assert.strictEqual(response.status, 404);
+    assert.strictEqual(response.status, 200);
   });
   it("should return a 401 status when the user is unauthorized", async () => {
     // ACT
@@ -62,7 +62,7 @@ describe("[GET] /tags", () => {
   });
 });
 
-describe("[POST] /tags", () => {
+describe("[POST] /tags/new", () => {
   it("should create new tags for the authenticated user", async () => {
     // ARRANGE
     const user = await prisma.user.create({
@@ -71,20 +71,13 @@ describe("[POST] /tags", () => {
     const accessToken = generateAccessToken(user);
     const newTags = {
       tags: [
-        { name: "Important", color: "#FF0000" },
-        { name: "Work", color: "#0000FF" },
+        { name: "Test", color: "#FF0001" },
+        { name: "Shop", color: "#C2D3D3" },
       ],
     };
-    await prisma.tag.createMany({
-      data: newTags.tags.map((tag) => ({
-        name: tag.name,
-        color: tag.color,
-        userId: user.id,
-      })),
-    });
 
     // ACT
-    const response = await httpRequest.post("/tags", newTags, {
+    const response = await httpRequest.post("/tags/new", newTags, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -98,5 +91,28 @@ describe("[POST] /tags", () => {
       createdTags.map((tag: any) => ({ name: tag.name, color: tag.color })),
       newTags.tags
     );
+  });
+  it("should return a 409 status when trying to create a tag that already exists", async () => {
+    // ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+    const existingTag = await prisma.tag.create({
+      data: { name: "ExistingTag", color: "#123456", userId: user.id },
+    });
+    const accessToken = generateAccessToken(user);
+    const newTags = {
+      tags: [{ name: existingTag.name, color: "#654321" }],
+    };
+
+    // ACT
+    const response = await httpRequest.post("/tags/new", newTags, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    // ASSERT
+    assert.strictEqual(response.status, 409);
   });
 });
