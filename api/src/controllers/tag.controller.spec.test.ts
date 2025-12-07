@@ -116,3 +116,93 @@ describe("[POST] /tags/new", () => {
     assert.strictEqual(response.status, 409);
   });
 });
+
+describe("[PATCH] /tags/update/:id", () => {
+  it("should update an existing tag for the authenticated user", async () => {
+    // ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+    const tag = await prisma.tag.create({
+      data: { name: "OldName", color: "#000000", userId: user.id },
+    });
+    const accessToken = generateAccessToken(user);
+    const updatedTagData = {
+      name: "NewName",
+      color: "#FFFFFF",
+    };
+
+    // ACT
+    const response = await httpRequest.patch(
+      `/tags/update/${tag.id}`,
+      updatedTagData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    // ASSERT
+    assert.strictEqual(response.status, 200);
+    const updatedTag = response.data.tag;
+    assert.strictEqual(updatedTag.name, updatedTagData.name);
+    assert.strictEqual(updatedTag.color, updatedTagData.color);
+  });
+  it("should return a 404 status when trying to update a non-existent tag", async () => {
+    // ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+    const accessToken = generateAccessToken(user);
+    const updatedTagData = {
+      name: "NonExistent",
+      color: "#FFFFFF",
+    };
+
+    // ACT
+    const response = await httpRequest.patch(
+      `/tags/update/9999`,
+      updatedTagData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    // ASSERT
+    assert.strictEqual(response.status, 404);
+  });
+  it("should return a 409 status when trying to update a tag to a name that already exists", async () => {
+    // ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+    const tag1 = await prisma.tag.create({
+      data: { name: "TagOne", color: "#111111", userId: user.id },
+    });
+    const tag2 = await prisma.tag.create({
+      data: { name: "TagTwo", color: "#222222", userId: user.id },
+    });
+    const accessToken = generateAccessToken(user);
+    const updatedTagData = {
+      name: tag1.name,
+      color: "#333333",
+    };
+
+    // ACT
+    const response = await httpRequest.patch(
+      `/tags/update/${tag2.id}`,
+      updatedTagData,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    // ASSERT
+    assert.strictEqual(response.status, 409);
+  });
+});
