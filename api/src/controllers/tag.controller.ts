@@ -1,4 +1,3 @@
-import { prisma } from "../models/index.ts";
 import type { Request, Response } from "express";
 import { UnauthorizedError, ForbiddenError } from "../lib/error.ts";
 import { decodeAccessToken, extractAccessTokenFromReq } from "../lib/auth.ts";
