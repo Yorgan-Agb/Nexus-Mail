@@ -4,7 +4,6 @@ import { httpRequest } from "../../test/index.ts";
 import { prisma } from "../models/index.ts";
 import { fakeUser, authedRequester } from "../../test/index.ts";
 import { generateAccessToken } from "../lib/auth.ts";
-import { de } from "zod/locales";
 
 describe("[GET] /tags", () => {
   it("should return a list of tags for the authenticated user", async () => {
