@@ -4,6 +4,7 @@ import { httpRequest } from "../../test/index.ts";
 import { prisma } from "../models/index.ts";
 import { fakeUser, authedRequester } from "../../test/index.ts";
 import { generateAccessToken } from "../lib/auth.ts";
+import { de } from "zod/locales";
 
 describe("[GET] /tags", () => {
   it("should return a list of tags for the authenticated user", async () => {
@@ -204,5 +205,49 @@ describe("[PATCH] /tags/update/:id", () => {
 
     // ASSERT
     assert.strictEqual(response.status, 409);
+  });
+});
+
+describe("[DELETE] /tags/remove/:id", () => {
+  it("should delete an existing tag for the authenticated user", async () => {
+    // ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+    const tag = await prisma.tag.create({
+      data: { name: "ToBeDeleted", color: "#000000", userId: user.id },
+    });
+    const accessToken = generateAccessToken(user);
+
+    // ACT
+    const response = await httpRequest.delete(`/tags/remove/${tag.id}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    // ASSERT
+    assert.strictEqual(response.status, 200);
+    const deletedTag = await prisma.tag.findUnique({
+      where: { id: tag.id },
+    });
+    assert.strictEqual(deletedTag, null);
+  });
+  it("should return a 404 status when trying to delete a non-existent tag", async () => {
+    // ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+    const accessToken = generateAccessToken(user);
+
+    // ACT
+    const response = await httpRequest.delete(`/tags/remove/9999`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+
+    // ASSERT
+    assert.strictEqual(response.status, 404);
   });
 });
