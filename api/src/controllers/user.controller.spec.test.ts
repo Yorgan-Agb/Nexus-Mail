@@ -93,7 +93,7 @@ describe("[GET] /users/me", () => {
     assert.strictEqual(profileResponse.status, 401);
   });
 });
-describe("[PUT] /users/me", () => {
+describe("[PATCH] /users/me", () => {
   it("should return a 200 status with updated user profile", async () => {
     // ARRANGE
     const user = await prisma.user.create({
@@ -106,7 +106,7 @@ describe("[PUT] /users/me", () => {
       lastname: "Pedro",
     };
     // ACT
-    const { data, status } = await httpRequest.put("/users/me", updateData, {
+    const { data, status } = await httpRequest.patch("/users/me", updateData, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -119,7 +119,7 @@ describe("[PUT] /users/me", () => {
   });
 });
 // A implémenter demain test pour le changement de mot de passe
-describe("[PUT] /users/me/password", () => {
+describe("[PATCH] /users/me/password", () => {
   it("should return a 200 status when password is successfully changed", async () => {
     // ARRANGE
     const password = "mySecretPwd!";
@@ -134,7 +134,7 @@ describe("[PUT] /users/me/password", () => {
     };
 
     // ACT
-    const { status } = await httpRequest.put(
+    const { status } = await httpRequest.patch(
       "/users/me/password",
       passwordData,
       {
@@ -161,7 +161,7 @@ describe("[PUT] /users/me/password", () => {
     };
 
     // ACT
-    const { status } = await httpRequest.put(
+    const { status } = await httpRequest.patch(
       "/users/me/password",
       passwordData,
       {
@@ -182,7 +182,7 @@ describe("[PUT] /users/me/password", () => {
     };
 
     // ACT
-    const { status } = await httpRequest.put(
+    const { status } = await httpRequest.patch(
       "/users/me/password",
       passwordData
     );

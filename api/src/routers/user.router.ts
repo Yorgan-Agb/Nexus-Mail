@@ -12,6 +12,6 @@ export const userRouter = Router();
 
 userRouter.get("/", checkAuth, getAllUsers);
 userRouter.get("/me", checkAuth, profileUser);
-userRouter.put("/me", checkAuth, changeProfileUser);
-userRouter.put("/me/password", checkAuth, changePasswordUser);
+userRouter.patch("/me", checkAuth, changeProfileUser);
+userRouter.patch("/me/password", checkAuth, changePasswordUser);
 userRouter.delete("/me", checkAuth, deleteUser);

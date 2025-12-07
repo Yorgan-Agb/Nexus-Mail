@@ -1,15 +1,15 @@
 import { NotFoundError, UnauthorizedError } from "../lib/error.ts";
 import { prisma } from "../models/index.ts";
+import { Prisma } from "../models/index.ts";
 import type {
   ChangeProfileInput,
   ChangePasswordInput,
 } from "../validations/user.validation.ts";
 import argon2 from "argon2";
 
-export const profile = async (userId: string) => {
-  const parseId = Number(userId);
+export const profile = async (userId: number) => {
   const user = await prisma.user.findUnique({
-    where: { id: parseId },
+    where: { id: userId },
     select: {
       firstname: true,
       lastname: true,
@@ -25,19 +25,27 @@ export const profile = async (userId: string) => {
 };
 
 export const changeProfile = async (
-  userId: string,
+  userId: number,
   data: ChangeProfileInput
 ) => {
-  const parseId = Number(userId);
   const user = await prisma.user.findUnique({
-    where: { id: parseId },
+    where: { id: userId },
   });
+
   if (!user) {
     throw new NotFoundError("User not found");
   }
 
+  if (data.email && data.email !== user.email) {
+    const isEmailTaken = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+    if (isEmailTaken) {
+      throw new UnauthorizedError("Email is already taken");
+    }
+  }
   const updatedUser = await prisma.user.update({
-    where: { id: parseId },
+    where: { id: userId },
     data: {
       firstname: data.firstname,
       lastname: data.lastname,
@@ -57,12 +65,11 @@ export const changeProfile = async (
 };
 
 export const changePassword = async (
-  userId: string,
+  userId: number,
   data: ChangePasswordInput
 ) => {
-  const parseId = Number(userId);
   const user = await prisma.user.findUnique({
-    where: { id: parseId },
+    where: { id: userId },
   });
   if (!user) {
     throw new NotFoundError("User not found");
@@ -78,7 +85,7 @@ export const changePassword = async (
   const hashedNewPassword = await argon2.hash(data.newPassword);
 
   const updatedUser = await prisma.user.update({
-    where: { id: parseId },
+    where: { id: userId },
     data: {
       password: hashedNewPassword,
     },
@@ -94,20 +101,21 @@ export const changePassword = async (
   return updatedUser;
 };
 
-export const deleteAccount = async (userId: string) => {
-  const parseId = Number(userId);
-  const user = await prisma.user.findUnique({
-    where: { id: parseId },
-  });
-  if (!user) {
-    throw new NotFoundError("User not found");
+export const deleteAccount = async (userId: number) => {
+  try {
+    await prisma.refreshToken.deleteMany({
+      where: { userId: userId },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        throw new NotFoundError("User not found");
+      }
+    }
+    throw error;
   }
 
-  await prisma.refreshToken.deleteMany({
-    where: { userId: parseId },
-  });
-
   await prisma.user.delete({
-    where: { id: parseId },
+    where: { id: userId },
   });
 };

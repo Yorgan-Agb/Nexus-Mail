@@ -16,7 +16,7 @@ export const changeProfileSchema = zod.object({
   birthdate: zod
     .string()
     .refine((date) => !isNaN(Date.parse(date)), {
-      message: "Invalid birthdate format",
+      message: "Date de naissance invalide",
     })
     .optional(),
 });
@@ -24,17 +24,13 @@ export const changeProfileSchema = zod.object({
 export type ChangeProfileInput = zod.infer<typeof changeProfileSchema>;
 
 export const changePasswordSchema = zod.object({
-  currentPassword: zod.string().min(8, "Le mot de passe actuel est requis"),
+  currentPassword: zod.string().min(6, "Le mot de passe actuel est requis"),
   newPassword: zod
     .string()
-    .min(8, "Le nouveau mot de passe doit contenir au moins 8 caractères")
+    .min(6, "Le nouveau mot de passe doit contenir au moins 6 caractères")
     .regex(
       /[A-Z]/,
       "Le nouveau mot de passe doit contenir au moins une lettre majuscule"
-    )
-    .regex(
-      /[a-z]/,
-      "Le nouveau mot de passe doit contenir au moins une lettre minuscule"
     )
     .regex(/[0-9]/, "Le nouveau mot de passe doit contenir au moins un chiffre")
     .regex(
