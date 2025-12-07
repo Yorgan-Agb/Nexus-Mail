@@ -20,3 +20,19 @@ export const createTagsSchema = z.object({
 
 export type CreateTagInput = z.infer<typeof createTagSchema>;
 export type TagsData = CreateTagInput | CreateTagInput[];
+
+export const updateTagSchema = z.object({
+  name: z
+    .string()
+    .min(1, "Tag name is required")
+    .max(50, "Tag name is too long")
+    .trim()
+    .optional(),
+  color: z
+    .string()
+    .regex(/^#[0-9A-Fa-f]{6}$/, "Color must be in hex format (#RRGGBB)")
+    .optional(),
+});
+
+export type UpdateTagInput = z.infer<typeof updateTagSchema>;
+export type UpdateTagsData = UpdateTagInput;

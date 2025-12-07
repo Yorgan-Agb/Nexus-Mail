@@ -1,6 +1,10 @@
 import { prisma } from "../models/index.ts";
 import { NotFoundError, ConflictError } from "../lib/error.ts";
-import type { TagsData } from "../validations/tag.validation.ts";
+import type {
+  TagsData,
+  UpdateTagInput,
+  UpdateTagsData,
+} from "../validations/tag.validation.ts";
 
 export const allTags = async (userId: number) => {
   const tags = await prisma.tag.findMany({
@@ -45,4 +49,43 @@ export const addTags = async (userId: number, tagData: TagsData) => {
     },
   });
   return createdTags;
+};
+
+export const modify = async (
+  userId: number,
+  tagId: number,
+  updateTagData: UpdateTagInput
+) => {
+  const tag = await prisma.tag.findUnique({
+    where: { id: tagId },
+  });
+  if (!tag || tag.userId !== userId) {
+    throw new NotFoundError("Tag not found");
+  }
+  if (updateTagData.name) {
+    const isTagNameTaken = await prisma.tag.findFirst({
+      where: {
+        userId: userId,
+        name: updateTagData.name,
+        id: { not: tagId },
+      },
+    });
+    if (isTagNameTaken) {
+      throw new ConflictError(
+        `Tag with name ${updateTagData.name} already exists`
+      );
+    }
+  }
+  const updatedTag = await prisma.tag.update({
+    where: { id: tagId },
+    data: {
+      ...updateTagData,
+    },
+    select: {
+      id: true,
+      name: true,
+      color: true,
+    },
+  });
+  return updatedTag;
 };
