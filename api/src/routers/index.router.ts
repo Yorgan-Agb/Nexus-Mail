@@ -4,6 +4,7 @@ import { authRouter } from "./auth.router.ts";
 import { userRouter } from "./user.router.ts";
 import { tagRouter } from "./tag.router.ts";
 import { folderRouter } from "./folder.router.ts";
+import { mailRouter } from "./mail.router.ts";
 
 export const router = Router();
 
@@ -13,3 +14,4 @@ router.use("/auth", authRouter);
 router.use("/users", userRouter);
 router.use("/tags", tagRouter);
 router.use("/folders", folderRouter);
+router.use("/mails", mailRouter);
