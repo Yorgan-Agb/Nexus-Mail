@@ -13,3 +13,5 @@ export const allUserFolders = async (userId: number) => {
 
   return folders;
 };
+
+export const getById = async (id: number) => {};

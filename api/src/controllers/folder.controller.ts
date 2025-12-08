@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { UnauthorizedError } from "../lib/error.ts";
 import { decodeAccessToken, extractAccessTokenFromReq } from "../lib/auth.ts";
-import { allUserFolders } from "../services/folder.service.ts";
+import { allUserFolders, getById } from "../services/folder.service.ts";
 
 export const getAllFolders = async (req: Request, res: Response) => {
   const userId = req.userId;
@@ -15,3 +15,5 @@ export const getAllFolders = async (req: Request, res: Response) => {
 
   res.status(200).json({ folders });
 };
+
+export const getFolderById = async (req: Request, res: Response) => {};
