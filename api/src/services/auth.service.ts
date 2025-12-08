@@ -36,6 +36,31 @@ export const register = async (data: RegisterInput) => {
       birthdate: new Date(data.birthdate),
     },
   });
+  const defaultFolders = [
+    {
+      name: "Inbox",
+      type: "inbox",
+      userId: newUser.id,
+    },
+    {
+      name: "Sent",
+      type: "sent",
+      userId: newUser.id,
+    },
+    {
+      name: "Drafts",
+      type: "drafts",
+      userId: newUser.id,
+    },
+    {
+      name: "Trash",
+      type: "trash",
+      userId: newUser.id,
+    },
+  ];
+  await prisma.folder.createMany({
+    data: defaultFolders,
+  });
 };
 
 export const refreshAccessToken = async (req: Request) => {
