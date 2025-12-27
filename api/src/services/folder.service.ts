@@ -14,4 +14,11 @@ export const allUserFolders = async (userId: number) => {
   return folders;
 };
 
-export const getById = async (id: number) => {};
+export const uniqueFolder = async (userId: number) => {
+  const folder = await prisma.folder.findUnique({
+    where: {
+      id: userId,
+    },
+  });
+  return folder;
+};
