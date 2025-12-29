@@ -75,3 +75,42 @@ describe("[GET] /folders/:type", () => {
     assert.strictEqual(response.status, 404);
   });
 });
+describe("[POST] /folders/new", () => {
+  it("should return a 201 status with the folder created", async () => {
+    //ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+    const requester = buildAuthedRequester(user);
+    const folder = {
+      name: "Travaille 1",
+      type: "custom",
+    };
+    //ACT
+    const response = await requester.post("/folders/new", folder);
+    //ASSERT
+    assert.strictEqual(response.status, 201);
+  });
+  it("should return a 409 status when folder already exist", async () => {
+    //ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+    const requester = buildAuthedRequester(user);
+    const existingFolder = await prisma.folder.create({
+      data: {
+        name: "Travaille 1",
+        type: "custom",
+        userId: user.id,
+      },
+    });
+    const folder = {
+      name: existingFolder.name,
+      type: "custom",
+    };
+    //ACT
+    const response = await requester.post("folders/new", folder);
+    //ASSERT
+    assert.strictEqual(response.status, 409);
+  });
+});
