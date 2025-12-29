@@ -40,7 +40,6 @@ model Folder {
   updatedAt DateTime @updatedAt
 
   @@index([userId])
-  @@unique([userId, type])
   @@map("folders")
 }
 

@@ -15,3 +15,5 @@ export const getFolderById = async (req: Request, res: Response) => {
   const folder = await uniqueFolder(userId, type);
   res.status(200).json({ folder });
 };
+
+export const createNewFolder = async (req: Request, res: Response) => {};
