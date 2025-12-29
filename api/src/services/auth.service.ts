@@ -43,6 +43,11 @@ export const register = async (data: RegisterInput) => {
       userId: newUser.id,
     },
     {
+      name: "Spam",
+      type: "spam",
+      userId: newUser.id,
+    },
+    {
       name: "Sent",
       type: "sent",
       userId: newUser.id,
