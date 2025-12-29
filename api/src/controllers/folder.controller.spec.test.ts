@@ -61,4 +61,17 @@ describe("[GET] /folders/:type", () => {
     assert.strictEqual(response.data.folder.name, "Inbox");
     assert.strictEqual(response.data.folder.userId, user.id);
   });
+  it("should return a 404 status if the folder doesn't exist", async () => {
+    //ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+    const requester = buildAuthedRequester(user);
+
+    //ACT
+    const response = await requester.get(`/folders/trash`);
+
+    //ASSERT
+    assert.strictEqual(response.status, 404);
+  });
 });
