@@ -1,5 +1,9 @@
 import { prisma } from "../models/index.ts";
-import { NotFoundError, ConflictError } from "../lib/error.ts";
+import {
+  NotFoundError,
+  ConflictError,
+  UnauthorizedError,
+} from "../lib/error.ts";
 
 export const allUserFolders = async (userId: number) => {
   const folders = await prisma.folder.findMany({
@@ -14,11 +18,17 @@ export const allUserFolders = async (userId: number) => {
   return folders;
 };
 
-export const uniqueFolder = async (userId: number) => {
+export const uniqueFolder = async (userId: number, type: string) => {
   const folder = await prisma.folder.findUnique({
     where: {
       id: userId,
+      type: type,
     },
   });
+
+  if (!folder) {
+    throw new NotFoundError("Folder not found");
+  }
+
   return folder;
 };

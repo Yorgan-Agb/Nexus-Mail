@@ -8,4 +8,4 @@ import {
 export const folderRouter = Router();
 
 folderRouter.get("/", checkAuth, getAllFolders);
-folderRouter.get("/:id", checkAuth, getFolderById);
+folderRouter.get("/:type", checkAuth, getFolderById);

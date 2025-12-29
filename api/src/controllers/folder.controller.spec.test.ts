@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { httpRequest } from "../../test/index.ts";
+import { buildAuthedRequester, httpRequest } from "../../test/index.ts";
 import { prisma } from "../models/index.ts";
 import { fakeUser, authedRequester } from "../../test/index.ts";
 import { generateAccessToken } from "../lib/auth.ts";
@@ -42,5 +42,27 @@ describe("[GET] /folders", () => {
 
     // ASSERT
     assert.strictEqual(response.status, 401);
+  });
+});
+describe("[GET] /folders/:id", () => {
+  it("should return a 200 status with the folder", async () => {
+    // ARRANGE
+    const user = await prisma.user.create({
+      data: fakeUser,
+    });
+    const folder = await prisma.folder.create({
+      data: { name: "Inbox", type: "system", userId: user.id },
+    });
+    const requester = buildAuthedRequester(user);
+    // ACT
+    const response = await requester.get(`/folders/${folder.id}`);
+    // ASSERT
+    assert.strictEqual(response.status, 200);
+    assert.strictEqual(response.data.folder.name, "Inbox");
+    assert.strictEqual(response.data.folder.userId, user.id);
+    console.log("Folder ID créé:", folder.id);
+    console.log("User ID:", user.id);
+    console.log("Response status:", response.status);
+    console.log("Response data:", response.data);
   });
 });

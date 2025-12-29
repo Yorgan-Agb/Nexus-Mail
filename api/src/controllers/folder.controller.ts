@@ -11,6 +11,7 @@ export const getAllFolders = async (req: Request, res: Response) => {
 
 export const getFolderById = async (req: Request, res: Response) => {
   const userId = req.userId;
-  const folder = await uniqueFolder(userId);
+  const type = req.params.type;
+  const folder = await uniqueFolder(userId, type);
   res.status(200).json({ folder });
 };
