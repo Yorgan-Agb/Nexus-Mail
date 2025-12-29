@@ -33,4 +33,25 @@ export const uniqueFolder = async (userId: number, type: string) => {
   return folder;
 };
 
-export const newFolder = async (userId: number) => {};
+export const newFolder = async (userId: number, name: string) => {
+  const isFolderExists = await prisma.folder.findFirst({
+    where: {
+      userId: userId,
+      name: name,
+    },
+  });
+  if (isFolderExists) {
+    throw new ConflictError(
+      `Folder with name ${isFolderExists.name} already exists`
+    );
+  }
+  const createdFolder = await prisma.folder.create({
+    data: {
+      name: name,
+      type: "custom",
+      userId: userId,
+    },
+  });
+
+  return createdFolder;
+};
