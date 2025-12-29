@@ -21,8 +21,10 @@ export const allUserFolders = async (userId: number) => {
 export const uniqueFolder = async (userId: number, type: string) => {
   const folder = await prisma.folder.findUnique({
     where: {
-      id: userId,
-      type: type,
+      userId_type: {
+        userId: userId,
+        type: type,
+      },
     },
   });
 

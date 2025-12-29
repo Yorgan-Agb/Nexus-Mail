@@ -44,25 +44,21 @@ describe("[GET] /folders", () => {
     assert.strictEqual(response.status, 401);
   });
 });
-describe("[GET] /folders/:id", () => {
+describe("[GET] /folders/:type", () => {
   it("should return a 200 status with the folder", async () => {
     // ARRANGE
     const user = await prisma.user.create({
       data: fakeUser,
     });
     const folder = await prisma.folder.create({
-      data: { name: "Inbox", type: "system", userId: user.id },
+      data: { name: "Inbox", type: "inbox", userId: user.id },
     });
     const requester = buildAuthedRequester(user);
     // ACT
-    const response = await requester.get(`/folders/${folder.id}`);
+    const response = await requester.get(`/folders/${folder.type}`);
     // ASSERT
     assert.strictEqual(response.status, 200);
     assert.strictEqual(response.data.folder.name, "Inbox");
     assert.strictEqual(response.data.folder.userId, user.id);
-    console.log("Folder ID créé:", folder.id);
-    console.log("User ID:", user.id);
-    console.log("Response status:", response.status);
-    console.log("Response data:", response.data);
   });
 });
